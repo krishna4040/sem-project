@@ -1,15 +1,17 @@
-FROM node:lts as builder
+#syntax=docker/dockerfile:1.7-labs
+FROM node:lts AS builder
 WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ .
 RUN npm run build
 
-FROM node:lts
+FROM node:lts AS final
 WORKDIR /app
-COPY --from=builder /app/dist /frontend/dist
+COPY --from=builder /app/dist /app/frontend/dist
 COPY package*.json ./
-RUN npm install
-COPY . .
+RUN npm ci --omit=dev
+COPY --exclude=frontend . .
+ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "server/index.js"]
