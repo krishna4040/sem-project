@@ -8,8 +8,5 @@ post-merge:
 pre-commit:
   parallel: true
   commands:
-    backend-linter:
-      run: npm run lint
-    frontend-linter:
-      root: "frontend/"
+    linter:
       run: npm run lint
