@@ -11,4 +11,5 @@ pre-commit:
     backend-linter:
       run: npm run lint
     frontend-linter:
-      run: cd frontend && npm run lint
+      root: "frontend/"
+      run: npm run lint
