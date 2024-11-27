@@ -1,20 +1,203 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  PRODUCER
+  RECEIVER
+  ADMIN
+}
+
+enum UserType {
+  INDIVIDUAL
+  ORGANIZATION
+}
+
+enum OrganizationType {
+  NGO
+  BUSINESS
+  CHARITY
+  OTHER
+}
+
+enum WasteCategory {
+  EWASTE
+  PLASTIC
+  STATIONARY
+  CLOTHES
+  FURNITURE
+  FOOD
+}
+
+enum WasteStatus {
+  AVAILABLE
+  PENDING
+  DONATED
+  RESERVED
+}
+
+enum DocumentType {
+  REGISTRATION_CERTIFICATE
+  NATIONAL_ID
+}
+
+enum PickupStatus {
+  PENDING
+  APPROVED
+  COMPLETED
+  REJECTED
+}
+
 model User {
-  id Int @id
-  name String
-  email String @unique
+  id               String            @id @default(cuid())
+  email            String            @unique
+  name             String?
+  image            String?
+  role             UserRole          @default(RECEIVER)
+  googleId         String?           @unique
+  clerkUserId      String?           @unique
+  userType         UserType          @default(INDIVIDUAL) // Differentiates between individuals and organizations
+  organizationType OrganizationType? // Specifies the type of organization (if applicable)
+
+  registrationCertificate String[]
+  nationalId              String[]
+  verified                Boolean  @default(false)
+
+  producedListings WasteListing[]  @relation("ProducedListings")
+  receivedListings WasteListing[]  @relation("ReceivedListings")
+  pickupRequests   PickupRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Account Details
+  accountDetails   AccountDetails?
+  accountDetailsId String?
+
+  // Work documentation (for individuals or organizations)
+  workDetails          WorkDetails?
+  documentsUploaded    Boolean               @default(false)
+  VerificationDocument VerificationDocument?
+  Workshop             Workshop[]
+  Donation             Donation[]
+}
+
+model VerificationDocument {
+  id           String       @id @default(cuid())
+  userId       String       @unique
+  user         User         @relation(fields: [userId], references: [id])
+  documentType DocumentType
+  documentUrl  String[] // Array of URLs to uploaded documents
+  verified     Boolean      @default(false) // Individual document verification status
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model AccountDetails {
+  id              String @id @default(cuid())
+  bankName        String
+  accountNumber   String
+  ifscCode        String
+  beneficiaryName String
+  description     String // Description of how funds will be used for social causes
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model WorkDetails {
+  id          String   @id @default(cuid())
+  description String // Description of the user's work in social welfare or relevant activities
+  images      String[] // Array of image URLs documenting their work
+  documents   String[] // Array of document URLs (e.g., PDFs)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model WasteListing {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  category    WasteCategory
+  quantity    Float
+  condition   String
+  images      String[]
+
+  latitude  Float?
+  longitude Float?
+  address   String?
+
+  status WasteStatus @default(AVAILABLE)
+
+  producer   User   @relation("ProducedListings", fields: [producerId], references: [id])
+  producerId String
+
+  receiver   User?   @relation("ReceivedListings", fields: [receiverId], references: [id])
+  receiverId String?
+
+  pickupRequests PickupRequest[]
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Workshop   Workshop? @relation(fields: [workshopId], references: [id])
+  workshopId String?
+}
+
+model PickupRequest {
+  id            String       @id @default(cuid())
+  scheduledDate DateTime
+  status        PickupStatus
+  utilization   String? // How the donated items will be used
+
+  wasteListing   WasteListing @relation(fields: [wasteListingId], references: [id])
+  wasteListingId String
+
+  requester   User   @relation(fields: [requesterId], references: [id])
+  requesterId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Donation {
+  id     String  @id @default(cuid())
+  amount Decimal @db.Decimal(10, 2)
+
+  donor   User   @relation(fields: [donorId], references: [id])
+  donorId String
+
+  createdAt  DateTime  @default(now())
+  Workshop   Workshop? @relation(fields: [workshopId], references: [id])
+  workshopId String?
+}
+
+model Workshop {
+  id          String   @id @default(cuid())
+  title       String // Title of the workshop
+  description String // Detailed description of the workshop
+  aim         String // Aim or goal of the workshop
+  solution    String // Solution proposed or outcomes expected from the workshop
+  images      String[] // Event images URLs
+
+  openForDonations Boolean @default(false) // Indicates if the workshop is open for donations
+  donationDetails  String? // Details about how donations will be used (if openForDonations = true)
+
+  startDate DateTime // Start date of the workshop
+  endDate   DateTime // End date of the workshop
+  location  String? // Location of the workshop (optional for online events)
+
+  organizer   User   @relation(fields: [organizerId], references: [id])
+  organizerId String // Reference to the User (organization)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  donations Donation[] // Link to donations for the workshop
+  help      WasteListing[]
 }
