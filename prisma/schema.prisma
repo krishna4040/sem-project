@@ -25,7 +25,7 @@ enum OrganizationType {
   OTHER
 }
 
-enum WasteCategory {
+enum ItemCategory {
   EWASTE
   PLASTIC
   STATIONARY
@@ -34,7 +34,7 @@ enum WasteCategory {
   FOOD
 }
 
-enum WasteStatus {
+enum ItemStatus {
   AVAILABLE
   PENDING
   DONATED
@@ -57,6 +57,7 @@ model User {
   id               String            @id @default(cuid())
   email            String            @unique
   name             String?
+  phoneNumber      String? // New field for user's phone number
   image            String?
   role             UserRole          @default(RECEIVER)
   googleId         String?           @unique
@@ -64,27 +65,22 @@ model User {
   userType         UserType          @default(INDIVIDUAL) // Differentiates between individuals and organizations
   organizationType OrganizationType? // Specifies the type of organization (if applicable)
 
-  registrationCertificate String[]
-  nationalId              String[]
-  verified                Boolean  @default(false)
+  verified          Boolean @default(false)
+  documentsUploaded Boolean @default(false)
 
-  producedListings WasteListing[]  @relation("ProducedListings")
-  receivedListings WasteListing[]  @relation("ReceivedListings")
+  producedListings ItemListing[]   @relation("ProducedListings")
+  receivedListings ItemListing[]   @relation("ReceivedListings")
   pickupRequests   PickupRequest[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Account Details
   accountDetails   AccountDetails?
   accountDetailsId String?
 
-  // Work documentation (for individuals or organizations)
-  workDetails          WorkDetails?
-  documentsUploaded    Boolean               @default(false)
   VerificationDocument VerificationDocument?
   Workshop             Workshop[]
   Donation             Donation[]
+  Rating               Rating[] // New relation to the Rating model
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationDocument {
@@ -110,30 +106,17 @@ model AccountDetails {
   user   User   @relation(fields: [userId], references: [id])
 }
 
-model WorkDetails {
-  id          String   @id @default(cuid())
-  description String // Description of the user's work in social welfare or relevant activities
-  images      String[] // Array of image URLs documenting their work
-  documents   String[] // Array of document URLs (e.g., PDFs)
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-}
-
-model WasteListing {
-  id          String        @id @default(cuid())
+model ItemListing {
+  id          String       @id @default(cuid())
   title       String
   description String
-  category    WasteCategory
-  quantity    Float
-  condition   String
-  images      String[]
+  category    ItemCategory
 
   latitude  Float?
   longitude Float?
   address   String?
 
-  status WasteStatus @default(AVAILABLE)
+  status ItemStatus @default(AVAILABLE)
 
   producer   User   @relation("ProducedListings", fields: [producerId], references: [id])
   producerId String
@@ -143,10 +126,96 @@ model WasteListing {
 
   pickupRequests PickupRequest[]
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   Workshop   Workshop? @relation(fields: [workshopId], references: [id])
   workshopId String?
+
+  // Relations to category-specific models
+  eWaste     EWaste?
+  plastic    Plastic?
+  stationary Stationary?
+  clothes    Clothes?
+  furniture  Furniture?
+  food       Food?
+}
+
+model EWaste {
+  id        String   @id @default(cuid())
+  brand     String
+  model     String
+  condition String
+  warranty  Boolean
+  quantity  Float
+  images    String[]
+  donate    Boolean
+
+  itemId      String      @unique
+  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+}
+
+model Plastic {
+  id         String   @id @default(cuid())
+  type       String // e.g., PET, HDPE, etc.
+  weight     Float // In kilograms
+  recyclable Boolean
+  images     String[]
+  donate     Boolean
+
+  itemId      String      @unique
+  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+}
+
+model Stationary {
+  id       String   @id @default(cuid())
+  type     String // e.g., pens, notebooks, etc.
+  quantity Int
+  new      Boolean
+  images   String[]
+  donate   Boolean
+
+  itemId      String      @unique
+  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+}
+
+model Clothes {
+  id        String   @id @default(cuid())
+  size      String
+  gender    String // e.g., men, women, unisex
+  material  String
+  condition String
+  quantity  Int
+  images    String[]
+  donate    Boolean
+
+  itemId      String      @unique
+  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+}
+
+model Furniture {
+  id         String   @id @default(cuid())
+  type       String // e.g., chair, table, etc.
+  material   String
+  condition  String
+  dimensions String
+  images     String[]
+  donate     Boolean
+
+  itemId      String      @unique
+  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+}
+
+model Food {
+  id         String   @id @default(cuid())
+  type       String // e.g., perishable, non-perishable
+  expiryDate DateTime
+  weight     Float // In kilograms
+  images     String[]
+  donate     Boolean
+
+  itemId      String      @unique
+  ItemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model PickupRequest {
@@ -155,8 +224,8 @@ model PickupRequest {
   status        PickupStatus
   utilization   String? // How the donated items will be used
 
-  wasteListing   WasteListing @relation(fields: [wasteListingId], references: [id])
-  wasteListingId String
+  itemListing   ItemListing @relation(fields: [itemListingId], references: [id])
+  itemListingId String
 
   requester   User   @relation(fields: [requesterId], references: [id])
   requesterId String
@@ -172,9 +241,10 @@ model Donation {
   donor   User   @relation(fields: [donorId], references: [id])
   donorId String
 
-  createdAt  DateTime  @default(now())
   Workshop   Workshop? @relation(fields: [workshopId], references: [id])
   workshopId String?
+
+  createdAt DateTime @default(now())
 }
 
 model Workshop {
@@ -195,9 +265,21 @@ model Workshop {
   organizer   User   @relation(fields: [organizerId], references: [id])
   organizerId String // Reference to the User (organization)
 
+  item      ItemListing[]
+  donations Donation[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  donations Donation[] // Link to donations for the workshop
-  help      WasteListing[]
+model Rating {
+  id       String @id @default(cuid())
+  value    Int // Rating value (e.g., 1-5)
+  feedback String // Feedback text from the user
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
