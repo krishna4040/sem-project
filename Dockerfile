@@ -1,5 +1,5 @@
 #syntax=docker/dockerfile:1.7-labs
-FROM node:lts AS builder
+FROM node:lts-alpine AS builder
 WORKDIR /app
 
 ARG VITE_CLERK_PUBLISHABLE_KEY
@@ -10,12 +10,12 @@ RUN npm install
 COPY frontend/ .
 RUN npm run build
 
-FROM node:lts AS final
+FROM node:lts-alpine AS final
 WORKDIR /app
 COPY --from=builder /app/dist /app/frontend/dist
 COPY package*.json ./
-RUN npm ci --omit=dev
 COPY --exclude=frontend . .
-ENV NODE_ENV=production
+RUN npm install
+RUN npx prisma generate
 EXPOSE 3000
 CMD ["node", "server/index.js"]

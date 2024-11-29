@@ -4,7 +4,7 @@ import {
   ORGANIZATION_TYPE,
   USER_ROLE,
   USER_TYPE,
-} from "../constants"
+} from "../constants/index.js"
 
 export const addUserDetailsSchema = z
   .object({
