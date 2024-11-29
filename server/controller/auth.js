@@ -1,3 +1,4 @@
+import db from "../utils/db.js"
 import { getWebhookData } from "../utils/getWebhookData.js"
 
 export const createUser = async (req, res) => {
@@ -11,8 +12,20 @@ export const createUser = async (req, res) => {
 
   try {
     if (success) {
-      // signup successful
-      // database call goes here
+      const signupData = webhook.data
+      await db.user.create({
+        data: {
+          email: signupData.email_addresses.find(
+            (email) => email.id === primary_phone_number_id,
+          ).email_address,
+          name: `${signupData.first_name} ${signupData.last_name}`,
+          clerkUserId: signupData.id,
+          phoneNumber: signupData.phone_numbers.find(
+            (num) => num.id === primary_phone_number_id,
+          ).phone_number,
+          profileImage: signupData.profile_image_url,
+        },
+      })
 
       res
         .status(200)

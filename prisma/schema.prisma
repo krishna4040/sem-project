@@ -8,8 +8,7 @@ generator client {
 }
 
 enum UserRole {
-  PRODUCER
-  RECEIVER
+  MEMBER
   ADMIN
 }
 
@@ -59,11 +58,10 @@ model User {
   email            String            @unique
   name             String?
   phoneNumber      String? // New field for user's phone number
-  image            String?
-  role             UserRole          @default(RECEIVER)
-  googleId         String?           @unique
+  profileImage     String?
   clerkUserId      String?           @unique
-  userType         UserType          @default(INDIVIDUAL) // Differentiates between individuals and organizations
+  role             UserRole          @default(MEMBER)
+  userType         UserType?         @default(INDIVIDUAL) // Differentiates between individuals and organizations
   organizationType OrganizationType? // Specifies the type of organization (if applicable)
 
   verified          Boolean @default(false)
