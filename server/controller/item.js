@@ -17,7 +17,7 @@ export const listItem = async (req, res) => {
       specificDetails,
     } = data
 
-    const userId = req.user.id // Assuming the user ID is attached to req.user
+    const userId = req.auth.userId
 
     // Create the base item listing
     const newItem = await db.itemListing.create({
