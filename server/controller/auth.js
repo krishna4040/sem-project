@@ -52,9 +52,8 @@ export const deleteUser = async (req, res) => {
 
   try {
     if (success) {
-      // delete successful
-      // database call goes here
-
+      const userId = webhook.data.id
+      await db.user.delete({ where: { clerkUserId: userId } })
       res
         .status(200)
         .json({ success: true, message: "user profile deleted successfully" })
