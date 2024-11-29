@@ -1,6 +1,10 @@
 #syntax=docker/dockerfile:1.7-labs
 FROM node:lts AS builder
 WORKDIR /app
+
+ARG VITE_CLERK_PUBLISHABLE_KEY
+ENV VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY}
+
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ .
