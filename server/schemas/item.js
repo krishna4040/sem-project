@@ -194,3 +194,77 @@ export const listItemSchema = z.object({
     ])
     .optional(),
 })
+
+export const itemSearchFiltersSchema = z.object({
+  title: z
+    .string()
+    .min(1, { message: "Title filter must be at least 1 character long." })
+    .optional(),
+
+  category: z
+    .enum([
+      "EWASTE",
+      "PLASTIC",
+      "STATIONARY",
+      "CLOTHES",
+      "FURNITURE",
+      "FOOD",
+      "OTHER",
+    ])
+    .optional(),
+
+  latitude: z
+    .number()
+    .optional()
+    .refine((val) => val >= -90 && val <= 90, {
+      message: "Latitude must be between -90 and 90.",
+    }),
+
+  longitude: z
+    .number()
+    .optional()
+    .refine((val) => val >= -180 && val <= 180, {
+      message: "Longitude must be between -180 and 180.",
+    }),
+
+  maxDistance: z
+    .number()
+    .positive({ message: "Max distance must be a positive number." })
+    .optional(),
+
+  producerId: z
+    .string()
+    .uuid({ message: "Producer ID must be a valid UUID." })
+    .optional(),
+
+  createdAt: z
+    .object({
+      from: z
+        .string()
+        .datetime({ message: "From date must be a valid ISO string." })
+        .optional(),
+      to: z
+        .string()
+        .datetime({ message: "To date must be a valid ISO string." })
+        .optional(),
+    })
+    .optional(),
+
+  specificDetails: z
+    .object({
+      brand: z.string().optional(),
+      condition: z.string().optional(),
+      material: z.string().optional(),
+      recyclable: z.boolean().optional(),
+    })
+    .optional(),
+
+  limit: z
+    .number()
+    .positive({ message: "Limit must be a positive number." })
+    .optional(),
+  offset: z
+    .number()
+    .min(0, { message: "Offset must be zero or a positive number." })
+    .optional(),
+})

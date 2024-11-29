@@ -1,5 +1,5 @@
-import { listItemSchema } from "../schemas/item"
-import db from "../utils/db"
+import { listItemSchema, itemSearchFiltersSchema } from "../schemas/item.js"
+import db from "../utils/db.js"
 import { zodError } from "../utils/zodError"
 
 export const listItem = async (req, res) => {
@@ -82,6 +82,131 @@ export const listItem = async (req, res) => {
       success: false,
       message: "Internal server error",
       error: error.message,
+    })
+  }
+}
+
+export const searchItems = async (req, res) => {
+  try {
+    const encodedQuery = req.query.filters
+    if (!encodedQuery) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing query parameter" })
+    }
+
+    const decodedQuery = JSON.parse(decodeURIComponent(encodedQuery))
+
+    const filters = itemSearchFiltersSchema.parse(decodedQuery)
+
+    const {
+      title,
+      category,
+      latitude,
+      longitude,
+      maxDistance,
+      producerId,
+      createdAt,
+      specificDetails,
+      limit = 10,
+      offset = 0,
+    } = filters
+
+    const where = {}
+
+    // Add filters to the where clause
+    if (title) where.title = { contains: title, mode: "insensitive" }
+    if (category) where.category = category
+    if (producerId) where.producerId = producerId
+
+    // Filter by creation date
+    if (createdAt) {
+      where.createdAt = {}
+      if (createdAt.from) where.createdAt.gte = new Date(createdAt.from)
+      if (createdAt.to) where.createdAt.lte = new Date(createdAt.to)
+    }
+
+    // Specific details filter
+    if (specificDetails) {
+      where.specificDetails = {
+        some: specificDetails,
+      }
+    }
+
+    // Geospatial query for max distance (if latitude and longitude provided)
+    let geoFilter = {}
+    if (
+      latitude !== undefined &&
+      longitude !== undefined &&
+      maxDistance !== undefined
+    ) {
+      geoFilter = {
+        AND: [
+          {
+            latitude: { gte: latitude - maxDistance / 111.12 },
+          },
+          {
+            latitude: { lte: latitude + maxDistance / 111.12 },
+          },
+          {
+            longitude: {
+              gte: longitude - maxDistance / (111.12 * Math.cos(latitude)),
+            },
+          },
+          {
+            longitude: {
+              lte: longitude + maxDistance / (111.12 * Math.cos(latitude)),
+            },
+          },
+        ],
+      }
+    }
+
+    // Combine filters
+    const combinedFilters = {
+      ...where,
+      ...geoFilter,
+    }
+
+    // Query the database
+    const items = await db.itemListing.findMany({
+      where: combinedFilters,
+      include: {
+        producer: true, // Including producer details (if needed)
+        specificDetails: true, // Including specific item details
+      },
+      take: limit,
+      skip: offset,
+      orderBy: { createdAt: "desc" },
+    })
+
+    const totalCount = await prisma.itemListing.count({
+      where: combinedFilters,
+    })
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        paginatedItems: items,
+        total: totalCount,
+      },
+    })
+  } catch (error) {
+    console.error("Error searching items:", error)
+
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: zodError(error),
+      })
+    }
+
+    // Handle other errors
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     })
   }
 }
