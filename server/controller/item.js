@@ -17,7 +17,11 @@ export const listItem = async (req, res) => {
       specificDetails,
     } = data
 
-    const userId = req.auth.userId
+    const user = await db.user.findUnique({
+      where: {
+        clerkUserId: req.auth.userId,
+      },
+    })
 
     // Create the base item listing
     const newItem = await db.itemListing.create({
@@ -28,7 +32,7 @@ export const listItem = async (req, res) => {
         latitude,
         longitude,
         address,
-        producerId: userId,
+        producerId: user.id,
       },
     })
 
