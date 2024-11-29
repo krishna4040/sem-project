@@ -32,6 +32,7 @@ enum ItemCategory {
   CLOTHES
   FURNITURE
   FOOD
+  OTHER
 }
 
 enum ItemStatus {
@@ -139,6 +140,19 @@ model ItemListing {
   clothes    Clothes?
   furniture  Furniture?
   food       Food?
+  other      Other?
+}
+
+model Other {
+  id        String   @id @default(cuid())
+  details   String[]
+  condition String
+  images    String[]
+  donate    Boolean
+  amount    Int?
+
+  itemId      String      @unique
+  ItemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model EWaste {
@@ -149,7 +163,8 @@ model EWaste {
   warranty  Boolean
   quantity  Float
   images    String[]
-  donate    Boolean
+  donated   Boolean
+  amount    Int?
 
   itemId      String      @unique
   ItemListing ItemListing @relation(fields: [itemId], references: [id])
@@ -161,7 +176,8 @@ model Plastic {
   weight     Float // In kilograms
   recyclable Boolean
   images     String[]
-  donate     Boolean
+  donated    Boolean
+  amount     Int?
 
   itemId      String      @unique
   ItemListing ItemListing @relation(fields: [itemId], references: [id])
@@ -174,6 +190,7 @@ model Stationary {
   new      Boolean
   images   String[]
   donate   Boolean
+  amount   Int?
 
   itemId      String      @unique
   ItemListing ItemListing @relation(fields: [itemId], references: [id])
@@ -188,6 +205,7 @@ model Clothes {
   quantity  Int
   images    String[]
   donate    Boolean
+  amount    Int?
 
   itemId      String      @unique
   ItemListing ItemListing @relation(fields: [itemId], references: [id])
@@ -201,6 +219,7 @@ model Furniture {
   dimensions String
   images     String[]
   donate     Boolean
+  amount     Int?
 
   itemId      String      @unique
   ItemListing ItemListing @relation(fields: [itemId], references: [id])
@@ -213,6 +232,7 @@ model Food {
   weight     Float // In kilograms
   images     String[]
   donate     Boolean
+  amount     Int?
 
   itemId      String      @unique
   ItemListing ItemListing @relation(fields: [itemId], references: [id])
