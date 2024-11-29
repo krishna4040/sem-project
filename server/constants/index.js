@@ -1,0 +1,21 @@
+export const USER_ROLE = ["MEMBER", "ADMIN"]
+
+export const USER_TYPE = ["INDIVIDUAL", "ORGANIZATION"]
+
+export const ORGANIZATION_TYPE = ["NGO", "BUSINESS", "CHARITY", "OTHER"]
+
+export const ITEM_CATEGORY = [
+  "EWASTE",
+  "PLASTIC",
+  "STATIONARY",
+  "CLOTHES",
+  "FURNITURE",
+  "FOOD",
+  "OTHER",
+]
+
+export const ITEM_STATUS = ["AVAILABLE", "PENDING", "DONATED", "RESERVED"]
+
+export const DOCUMENT_TYPE = ["REGISTRATION_CERTIFICATE", "NATIONAL_ID"]
+
+export const PICKUP_STATUS = ["PENDING", "APPROVED", "COMPLETED", "REJECTED"]

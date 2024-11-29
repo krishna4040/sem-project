@@ -64,9 +64,6 @@ model User {
   userType         UserType?         @default(INDIVIDUAL) // Differentiates between individuals and organizations
   organizationType OrganizationType? // Specifies the type of organization (if applicable)
 
-  verified          Boolean @default(false)
-  documentsUploaded Boolean @default(false)
-
   producedListings ItemListing[]   @relation("ProducedListings")
   receivedListings ItemListing[]   @relation("ReceivedListings")
   pickupRequests   PickupRequest[]

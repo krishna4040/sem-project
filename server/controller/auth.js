@@ -1,5 +1,7 @@
+import { addUserDetailsSchema } from "../schemas/auth.js"
 import db from "../utils/db.js"
 import { getWebhookData } from "../utils/getWebhookData.js"
+import { zodError } from "../utils/zodError.js"
 
 export const createUser = async (req, res) => {
   const SIGNING_SECRET = process.env.CREATE_USER_SIGNING_SECRET
@@ -116,6 +118,53 @@ export const updateUser = async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message,
+    })
+  }
+}
+
+export const addUserDetails = async (req, res) => {
+  try {
+    // Validate input using the Zod schema
+    const validatedData = addUserDetailsSchema.parse(req.body)
+
+    // Destructure validated data
+    const { role, userType, organizationType, document_urls, documentType } =
+      validatedData
+
+    // Create user details object
+    const userDetailsData = {
+      role,
+      userType,
+      ...(userType === "organization" && {
+        organizationType,
+        document_urls: { set: document_urls }, // Assuming Prisma uses `set` for arrays
+        documentType,
+      }),
+    }
+
+    // Save to database
+    const newUserDetails = await prisma.userDetails.create({
+      data: userDetailsData,
+    })
+
+    // Respond with the newly created user details
+    res.status(201).json({
+      message: "User details added successfully",
+      data: newUserDetails,
+    })
+  } catch (error) {
+    // Handle validation errors
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: zodError(error),
+      })
+    }
+
+    // Handle other errors
+    console.error("Error adding user details:", error)
+    res.status(500).json({
+      message: "An error occurred while adding user details",
     })
   }
 }

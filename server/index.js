@@ -13,7 +13,7 @@ const app = express()
 
 app.use(express.static(path.join(__dirname, "../frontend/dist")))
 
-app.use("/api/auth", express.raw({ type: "application/json" }), authRouter)
+app.use("/api/auth", authRouter)
 app.use("/api/items", express.json(), itemsRouter)
 
 app.get("/api", (req, res) => res.json({ message: "Hello from express BE!" }))
