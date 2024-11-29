@@ -1,6 +1,6 @@
 import { listItemSchema, itemSearchFiltersSchema } from "../schemas/item.js"
 import db from "../utils/db.js"
-import { zodError } from "../utils/zodError"
+import { zodError } from "../utils/zodError.js"
 
 export const listItem = async (req, res) => {
   try {
