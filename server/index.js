@@ -2,6 +2,7 @@ import express from "express"
 import path, { dirname } from "path"
 import { fileURLToPath } from "url"
 import dotenv from "dotenv"
+import authRouter from "./router/auth.js"
 
 dotenv.config()
 
@@ -10,7 +11,8 @@ const __dirname = dirname(__filename)
 const app = express()
 
 app.use(express.static(path.join(__dirname, "../frontend/dist")))
-app.use(express.json())
+
+app.use("/api/auth", express.raw({ type: "application/json" }), authRouter)
 
 app.get("/api", (req, res) => res.json({ message: "Hello from express BE!" }))
 app.get("*", (req, res) =>
