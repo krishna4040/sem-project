@@ -79,12 +79,36 @@ export const updateUser = async (req, res) => {
 
   try {
     if (success) {
-      // update successful
-      // database call goes here
+      const updateData = webhook.data
+
+      const primaryEmail = updateData.email_addresses.find(
+        (email) => email.id === updateData.primary_email_address_id,
+      )?.email_address
+
+      const phoneNumber = updateData.phone_numbers.find(
+        (num) => num.id === updateData.primary_phone_number_id,
+      )?.phone_number
+
+      const fullName = `${updateData.first_name || ""} ${
+        updateData.last_name || ""
+      }`.trim()
+
+      // Update user in the database
+      await db.user.update({
+        where: {
+          clerkUserId: updateData.id,
+        },
+        data: {
+          email: primaryEmail,
+          name: fullName || null,
+          profileImage: updateData.profile_image_url,
+          phoneNumber: phoneNumber || null,
+        },
+      })
 
       res
         .status(200)
-        .json({ success: true, message: "user profile updated successfully" })
+        .json({ success: true, message: "User profile updated successfully" })
     } else {
       res.status(404).json({ success, message })
     }
