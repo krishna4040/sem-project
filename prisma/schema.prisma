@@ -70,10 +70,10 @@ model User {
   accountDetails   AccountDetails?
   accountDetailsId String?
 
-  VerificationDocument VerificationDocument?
-  Workshop             Workshop[]
-  Donation             Donation[]
-  Rating               Rating[] // New relation to the Rating model
+  verificationDocument VerificationDocument?
+  workshops            Workshop[]
+  donations            Donation[]
+  ratings              Rating[] // New relation to the Rating model
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,7 +125,7 @@ model ItemListing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Workshop   Workshop? @relation(fields: [workshopId], references: [id])
+  workshop   Workshop? @relation(fields: [workshopId], references: [id])
   workshopId String?
 
   // Relations to category-specific models
@@ -147,7 +147,7 @@ model Other {
   amount    Int?
 
   itemId      String      @unique
-  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+  itemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model EWaste {
@@ -162,7 +162,7 @@ model EWaste {
   amount    Int?
 
   itemId      String      @unique
-  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+  itemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model Plastic {
@@ -175,7 +175,7 @@ model Plastic {
   amount     Int?
 
   itemId      String      @unique
-  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+  itemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model Stationary {
@@ -188,7 +188,7 @@ model Stationary {
   amount   Int?
 
   itemId      String      @unique
-  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+  itemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model Clothes {
@@ -203,7 +203,7 @@ model Clothes {
   amount    Int?
 
   itemId      String      @unique
-  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+  itemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model Furniture {
@@ -217,7 +217,7 @@ model Furniture {
   amount     Int?
 
   itemId      String      @unique
-  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+  itemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model Food {
@@ -230,7 +230,7 @@ model Food {
   amount     Int?
 
   itemId      String      @unique
-  ItemListing ItemListing @relation(fields: [itemId], references: [id])
+  itemListing ItemListing @relation(fields: [itemId], references: [id])
 }
 
 model PickupRequest {
@@ -256,7 +256,7 @@ model Donation {
   donor   User   @relation(fields: [donorId], references: [id])
   donorId String
 
-  Workshop   Workshop? @relation(fields: [workshopId], references: [id])
+  workshop   Workshop? @relation(fields: [workshopId], references: [id])
   workshopId String?
 
   createdAt DateTime @default(now())
