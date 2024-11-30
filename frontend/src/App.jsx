@@ -2,6 +2,7 @@ import React from "react"
 import { Home } from "./pages"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import RootLayout from "./RootLayout"
+import "./App.css"
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
