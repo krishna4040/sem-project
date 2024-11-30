@@ -8,19 +8,23 @@ import {
 import React from "react"
 import { Link, NavLink } from "react-router-dom"
 import icon from "../../public/favicon.ico"
+import { Button } from "./ui/button"
 
-const activeClass = ({ isActive }) => (isActive ? "text-secondary-dark" : "")
+const activeClass = ({ isActive }) =>
+  isActive
+    ? "text-secondary-dark underline underline-offset-8 decoration-wavy decoration-2"
+    : ""
 
 const Navbar = () => {
   return (
-    <nav className="flex items-center justify-between p-5 bg-secondary-light shadow-md">
+    <nav className="flex items-center justify-between p-5 bg-secondary-light shadow-md ">
       <Link to="/">
         <img src={icon} alt="logo" className="w-[30px]" />
       </Link>
       <ul className="flex gap-10 ml-32">
         <li>
-          <NavLink to="/view-items" className={activeClass}>
-            View Items
+          <NavLink to="/explore" className={activeClass}>
+            Explore
           </NavLink>
         </li>
         <li>
@@ -36,14 +40,18 @@ const Navbar = () => {
       </ul>
       <div className="flex gap-5">
         <SignedIn>
-          <UserButton />
-          <NavLink to="/dashboard" className={activeClass}>
-            Dashboard
+          <NavLink to="/dashboard/my-dashboard" className={activeClass}>
+            <Button className="bg-primary-dark">Dashboard</Button>
           </NavLink>
+          <UserButton />
         </SignedIn>
         <SignedOut>
-          <SignInButton mode="modal" />
-          <SignUpButton mode="modal" />
+          <Button className="bg-primary-dark">
+            <SignInButton mode="modal" />
+          </Button>
+          <Button className="bg-primary-dark">
+            <SignUpButton mode="modal" />
+          </Button>
         </SignedOut>
       </div>
     </nav>
