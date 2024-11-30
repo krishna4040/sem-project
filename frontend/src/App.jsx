@@ -1,6 +1,5 @@
 import React from "react"
-import { Home, Signin, Signup } from "./pages"
-// import { AuthRoutesGuard, ProtectedRoutesGuard } from "./guards"
+import { Home } from "./pages"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import RootLayout from "./RootLayout"
 
@@ -16,20 +15,17 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       {
-        // element: <AuthRoutesGuard />,
-        children: [
-          { path: "/sign-up", element: <Signup /> },
-          { path: "/sign-in", element: <Signin /> },
-        ],
+        path: "/view-items",
+        element: "View-items",
       },
-      // {
-      //   element: <ProtectedRoutesGuard />,
-      //   path: 'dashboard',
-      //   children: [
-      //     { path: '/dashboard', element: <DashboardPage /> },
-      //     { path: '/dashboard/invoices', element: <InvoicesPage /> },
-      //   ],
-      // },
+      {
+        path: "/list-items",
+        element: "List-items",
+      },
+      {
+        path: "/create-workshop",
+        element: "Create-workshop",
+      },
     ],
   },
 ])

@@ -19,17 +19,19 @@ export default function RootLayout() {
       routerReplace={(to) => navigate(to, { replace: true })}
       publishableKey={PUBLISHABLE_KEY}
     >
-      <Show when={!dndNavbar.includes(location.pathname)}>
-        <header>
-          <Navbar />
-        </header>
-      </Show>
-      <main>
-        <Outlet />
-      </main>
-      <Show when={!dndFooter.includes(location.pathname)}>
-        <Footer />
-      </Show>
+      <div className="bg-primary-light min-h-screen">
+        <Show when={!dndNavbar.includes(location.pathname)}>
+          <header>
+            <Navbar />
+          </header>
+        </Show>
+        <main>
+          <Outlet />
+        </main>
+        <Show when={!dndFooter.includes(location.pathname)}>
+          <Footer />
+        </Show>
+      </div>
     </ClerkProvider>
   )
 }
