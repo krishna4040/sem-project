@@ -13,11 +13,11 @@ const activeClass = ({ isActive }) => (isActive ? "text-secondary-dark" : "")
 
 const Navbar = () => {
   return (
-    <nav className="flex items-center justify-between p-3">
+    <nav className="flex items-center justify-between p-5 bg-secondary-light shadow-md">
       <Link to="/">
         <img src={icon} alt="logo" className="w-[30px]" />
       </Link>
-      <ul className="flex gap-5">
+      <ul className="flex gap-10 ml-32">
         <li>
           <NavLink to="/view-items" className={activeClass}>
             View Items
