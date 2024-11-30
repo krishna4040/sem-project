@@ -4,6 +4,7 @@ import { fileURLToPath } from "url"
 import dotenv from "dotenv"
 import authRouter from "./router/auth.js"
 import itemsRouter from "./router/items.js"
+import dashboardRouter from "./router/dashboard.js"
 
 dotenv.config()
 
@@ -15,6 +16,7 @@ app.use(express.static(path.join(__dirname, "../frontend/dist")))
 
 app.use("/api/auth", authRouter)
 app.use("/api/items", express.json(), itemsRouter)
+app.use("/api/dashboard", express.json(), dashboardRouter)
 
 app.get("/api", (req, res) => res.json({ message: "Hello from express BE!" }))
 app.get("*", (req, res) =>

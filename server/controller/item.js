@@ -214,3 +214,13 @@ export const searchItems = async (req, res) => {
     })
   }
 }
+
+export const getItem = async (req, res) => {}
+
+export const updateItem = async (req, res) => {}
+
+export const deleteItem = async (req, res) => {}
+
+export const createPickupRequest = async (req, res) => {}
+
+export const giveFeedback = async (req, res) => {}
