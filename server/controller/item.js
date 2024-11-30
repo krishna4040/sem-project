@@ -215,7 +215,44 @@ export const searchItems = async (req, res) => {
   }
 }
 
-export const getItem = async (req, res) => {}
+export const getItem = async (req, res) => {
+  const { itemId } = req.params
+
+  // Ensure `itemId` is provided
+  if (!itemId || typeof itemId !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Invalid or missing itemId parameter." })
+  }
+
+  try {
+    // Fetch the item details along with all related data
+    const item = await db.itemListing.findUnique({
+      where: { id: itemId },
+      include: {
+        producer: true,
+        eWaste: true,
+        plastic: true,
+        stationary: true,
+        clothes: true,
+        furniture: true,
+        food: true,
+        other: true,
+      },
+    })
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found." })
+    }
+
+    return res.status(200).json({ item })
+  } catch (error) {
+    console.error(error)
+    return res
+      .status(500)
+      .json({ error: "An error occurred while retrieving the item." })
+  }
+}
 
 export const updateItem = async (req, res) => {}
 
