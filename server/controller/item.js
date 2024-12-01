@@ -186,7 +186,7 @@ export const searchItems = async (req, res) => {
       orderBy: { createdAt: "desc" },
     })
 
-    const totalCount = await prisma.itemListing.count({
+    const totalCount = await db.itemListing.count({
       where: combinedFilters,
     })
 
@@ -256,7 +256,98 @@ export const getItem = async (req, res) => {
   }
 }
 
-export const updateItem = async (req, res) => {}
+export const updateItem = async (req, res) => {
+  try {
+    // Fetch the user based on `clerkUserId`
+    const user = await db.user.findUnique({
+      where: {
+        clerkUserId: req.auth.userId,
+      },
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." })
+    }
+
+    // Parse and validate the request body using Zod
+    const validation = updateItemSchema.safeParse(req.body)
+    if (!validation.success) {
+      return res.status(400).json({ error: validation.error.errors })
+    }
+
+    const {
+      itemId,
+      title,
+      description,
+      category,
+      latitude,
+      longitude,
+      address,
+      status,
+      categoryDetails,
+    } = validation.data
+
+    // Find the item to update and ensure the user owns it
+    const item = await db.itemListing.findUnique({
+      where: { id: itemId },
+    })
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found." })
+    }
+
+    if (item.producerId !== user.id) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to update this item." })
+    }
+
+    // Update the general `ItemListing` fields
+    const updatedItem = await db.itemListing.update({
+      where: { id: itemId },
+      data: {
+        title,
+        description,
+        category,
+        latitude,
+        longitude,
+        address,
+        status,
+      },
+    })
+
+    // Update the category-specific fields if provided
+    if (categoryDetails && category) {
+      const categoryModelMap = {
+        EWASTE: "eWaste",
+        PLASTIC: "plastic",
+        STATIONARY: "stationary",
+        CLOTHES: "clothes",
+        FURNITURE: "furniture",
+        FOOD: "food",
+        OTHER: "other",
+      }
+
+      const categoryModel = categoryModelMap[category]
+
+      if (categoryModel) {
+        await db[categoryModel].update({
+          where: { itemId },
+          data: categoryDetails,
+        })
+      }
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Item updated successfully.", item: updatedItem })
+  } catch (error) {
+    console.error("Error updating item:", error)
+    return res
+      .status(500)
+      .json({ error: "An error occurred while updating the item." })
+  }
+}
 
 export const deleteItem = async (req, res) => {}
 

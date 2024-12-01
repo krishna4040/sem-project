@@ -268,3 +268,46 @@ export const itemSearchFiltersSchema = z.object({
     .min(0, { message: "Offset must be zero or a positive number." })
     .optional(),
 })
+
+export const updateItemSchema = z.object({
+  itemId: z.string().nonempty("Item ID is required."), // Required to identify the item
+  title: z.string().optional(),
+  description: z.string().optional(),
+  category: z
+    .enum([
+      "EWASTE",
+      "PLASTIC",
+      "STATIONARY",
+      "CLOTHES",
+      "FURNITURE",
+      "FOOD",
+      "OTHER",
+    ])
+    .optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  address: z.string().optional(),
+  status: z.enum(["AVAILABLE", "PENDING", "DONATED", "RESERVED"]).optional(),
+  // Category-specific fields
+  categoryDetails: z
+    .object({
+      brand: z.string().optional(),
+      model: z.string().optional(),
+      condition: z.string().optional(),
+      warranty: z.boolean().optional(),
+      quantity: z.number().optional(),
+      weight: z.number().optional(),
+      recyclable: z.boolean().optional(),
+      type: z.string().optional(),
+      expiryDate: z.date().optional(),
+      size: z.string().optional(),
+      gender: z.string().optional(),
+      material: z.string().optional(),
+      dimensions: z.string().optional(),
+      details: z.array(z.string()).optional(),
+      images: z.array(z.string()).optional(),
+      donate: z.boolean().optional(),
+      amount: z.number().optional(),
+    })
+    .optional(),
+})
