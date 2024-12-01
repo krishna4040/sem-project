@@ -116,7 +116,9 @@ export const searchItems = async (req, res) => {
       offset = 0,
     } = filters
 
-    const where = {}
+    const where = {
+      receiverId: null,
+    }
 
     // Add filters to the where clause
     if (title) where.title = { contains: title, mode: "insensitive" }
