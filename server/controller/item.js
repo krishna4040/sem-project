@@ -349,7 +349,68 @@ export const updateItem = async (req, res) => {
   }
 }
 
-export const deleteItem = async (req, res) => {}
+export const deleteItem = async (req, res) => {
+  try {
+    const user = await db.user.findUnique({
+      where: {
+        clerkUserId: req.auth.userId,
+      },
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." })
+    }
+
+    const { itemId } = req.params
+
+    if (!itemId) {
+      return res.status(400).json({ error: "Item ID is required." })
+    }
+
+    const item = await db.itemListing.findUnique({
+      where: { id: itemId },
+    })
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found." })
+    }
+
+    if (item.producerId !== user.id) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to delete this item." })
+    }
+
+    const categoryModelMap = {
+      EWASTE: "eWaste",
+      PLASTIC: "plastic",
+      STATIONARY: "stationary",
+      CLOTHES: "clothes",
+      FURNITURE: "furniture",
+      FOOD: "food",
+      OTHER: "other",
+    }
+
+    const categoryModel = categoryModelMap[item.category]
+
+    if (categoryModel) {
+      await db[categoryModel].deleteMany({
+        where: { itemId },
+      })
+    }
+
+    await db.itemListing.delete({
+      where: { id: itemId },
+    })
+
+    return res.status(200).json({ message: "Item deleted successfully." })
+  } catch (error) {
+    console.error("Error deleting item:", error)
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the item." })
+  }
+}
 
 export const createPickupRequest = async (req, res) => {}
 
