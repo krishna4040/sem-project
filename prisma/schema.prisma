@@ -236,11 +236,12 @@ model Food {
 model PickupRequest {
   id            String       @id @default(cuid())
   scheduledDate DateTime
-  status        PickupStatus
-  utilization   String? // How the donated items will be used
+  status        PickupStatus @default(PENDING)
+  notes         String[]
+  pickupAddress String?
 
-  itemListing   ItemListing @relation(fields: [itemListingId], references: [id])
-  itemListingId String
+  item   ItemListing @relation(fields: [itemId], references: [id])
+  itemId String
 
   requester   User   @relation(fields: [requesterId], references: [id])
   requesterId String

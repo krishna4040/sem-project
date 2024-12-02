@@ -311,3 +311,13 @@ export const updateItemSchema = z.object({
     })
     .optional(),
 })
+
+export const createPickupRequestSchema = z.object({
+  itemId: z.string().uuid().nonempty("Item ID is required."),
+  pickupAddress: z.string().nonempty("Pickup address is required."),
+  preferredPickupDate: z
+    .string()
+    .datetime({ message: "Invalid date format." })
+    .optional(),
+  notes: z.string().optional(), // Optional additional information
+})

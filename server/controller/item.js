@@ -1,4 +1,8 @@
-import { listItemSchema, itemSearchFiltersSchema } from "../schemas/item.js"
+import {
+  listItemSchema,
+  itemSearchFiltersSchema,
+  createPickupRequestSchema,
+} from "../schemas/item.js"
 import db from "../utils/db.js"
 import { zodError } from "../utils/zodError.js"
 
@@ -412,6 +416,62 @@ export const deleteItem = async (req, res) => {
   }
 }
 
-export const createPickupRequest = async (req, res) => {}
+export const createPickupRequest = async (req, res) => {
+  try {
+    const user = await db.user.findUnique({
+      where: {
+        clerkUserId: req.auth.userId,
+      },
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." })
+    }
+
+    const validation = createPickupRequestSchema.safeParse(req.body)
+
+    if (!validation.success) {
+      return res.status(400).json({ error: validation.error.errors })
+    }
+
+    const { itemId, pickupAddress, preferredPickupDate, notes } =
+      validation.data
+
+    const item = await db.itemListing.findUnique({
+      where: { id: itemId },
+    })
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found." })
+    }
+
+    if (item.producerId !== user.id) {
+      return res.status(403).json({
+        error: "You are not authorized to request a pickup for this item.",
+      })
+    }
+
+    // Step 4: Create the pickup request
+    const pickupRequest = await db.pickupRequest.create({
+      data: {
+        itemId,
+        userId: user.id,
+        pickupAddress,
+        scheduledDate: preferredPickupDate || null,
+        notes: notes || null,
+      },
+    })
+
+    return res.status(201).json({
+      message: "Pickup request created successfully.",
+      pickupRequest,
+    })
+  } catch (error) {
+    console.error("Error creating pickup request:", error)
+    return res
+      .status(500)
+      .json({ error: "An error occurred while creating the pickup request." })
+  }
+}
 
 export const giveFeedback = async (req, res) => {}
